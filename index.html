@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            *{margin: 0; padding: 0}
+            ul, li{list-style: none;}
+            .fm-container{
+                color: #222;
+                width: 450px;
+                height: 800px;
+                margin: 20px auto;
+                background-color: #d8ddda;
+                /* overflow: hidden; */
+            }
+            @media(max-width: 480px){
+                .fm-container{
+                    position: fixed;
+                    top: 0;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    width: auto;
+                    margin: 0;
+                    min-width: 320px;
+                    height: auto;
+                    overflow: scroll;
+                }
+            }
+            .topbar{
+                background: linear-gradient(#2c3c35, #313431);
+                color: rgb(126,128,126);
+                font-weight: bold;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+            }
+            .topbar>.prev, .topbar>.next{
+                font-size: 1.5em;
+                flex-grow: 0;
+                flex-shrink: 0;
+                color: rgb(126,128,126);
+                cursor: pointer;
+            }
+            .topbar>.prev:hover, .topbar>.next:hover{
+                color: #fafcfc;
+            }
+            
+            .channels{
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                flex-grow: 1;
+            }
+            .channels>.current-channel{
+                color: rgb(233,237,234);
+                font-size: 1.2em;
+            }
+            #main{
+                display: flex;
+                background-color: #e8edea;
+                color: #3f413f;
+                padding: 10px;
+                position: relative;
+            }
+            #main>img{
+                width: 90px;
+                height: 90px;
+                display: block;
+                flex-grow: 0;
+                flex-shrink: 0;
+                margin: 20px;
+            }
+            #main>.detail{
+                flex-grow: 1;
+                flex-shrink: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+            }
+            #main>.detail>h3{
+                font-size: 0.9em;
+            }
+            #main>.detail>h3.artist{
+                color: #7f8281;
+            }
+            #main>.detail>h3.title{
+                font-size: 1.1em;
+            }
+            #main>.detail>.time-line{
+                display: flex;
+                margin: 3px 15px 3px 8px;
+                align-items: center;
+            }
+            #main>.detail>.time-line>.line{
+                height: 3px;
+                flex-shrink: 1;
+                flex-grow: 1;
+                border-radius: 2px;
+                background-color: #ced9d3;
+                cursor: pointer;
+            }
+            #main>.detail>.time-line>.line>.played{
+                background-color: #91bdb4;
+                width: 50%;
+                height: 100%;
+                border-radius: 2px;
+            }
+            #main>.detail>.time-line>.time-left{
+                font-size: 0.8em;
+                margin: 5px;
+                padding: 0 8px;
+            }
+            #main>.detail>.control{
+                display: flex;
+                justify-content: space-around;
+                font-size: 1em;
+            }
+            #main>.detail>.control>li{
+                cursor: pointer;
+            }
+            #main>.detail>.control>li.volume{
+                position: relative;
+            }
+            #main>.detail>.control>li.volume>.volume-controler{
+                box-sizing: content-box;
+                position: absolute;
+                left: 100%;
+                bottom: -100%;
+                height: 50px;
+                width: 2px;
+                background-color: #333;
+                margin: 5px;
+                visibility: hidden;
+            }
+            #main>.detail>.control>li.volume>.volume-controler>.volume-height{
+                width: 100%;
+                height: 0;
+                background-color: #ccc;
+            }
+            #main>.detail>.control>li.volume:hover>.volume-controler{
+                visibility: visible;
+                opacity: 1;
+            }
+            #main>.favorite-list{
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+            }
+            .lyric{
+                text-align: center;
+                padding: 20px;
+                overflow-y: scroll;
+                margin-right: -20px;
+            }          
+    </style>
+    </head>
+    <body> 
+        <div class="fm-container">
+            <div class="topbar">
+                <div class="prev"><</div>
+                <ul class="channels">
+                    <li>流行</li>
+                    <li class="current-channel">嘻哈</li>
+                    <li>古典</li>
+                </ul>
+                <div class="next">></div>
+            </div>
+            <audio src="#"></audio>
+            <div id="main">
+                <img src="demo.jpg">
+                <div class="detail">
+                    <h3 class="title">歌名</h3>
+                    <h3 class="artist">歌手</h3>
+                    <div class="time-line">
+                        <div class="line">
+                            <div class="played"></div>
+                        </div>
+                        <div class="time-left">-<span class="minute">00</span>:<span class="second">00</span></div>
+                    </div>
+                    <ul class="control">
+                        <li class="like">喜欢</li>
+                        <li class="play-or-pause">播放/停止</li>
+                        <li class="next-song">下一首</li>
+                        <li class="volume">
+                            音量
+                            <div class="volume-controler">                                
+                                <div class="volume-height"></div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <ul class="lyric">
+                <li>这里是歌词</li>
+            </ul>
+        </div>
+    </body>
+</html>
