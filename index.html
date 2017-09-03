@@ -3,7 +3,8 @@
     <head>
         <title></title>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="referrer" content="never">
+         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
             *{margin: 0; padding: 0}
             ul, li{list-style: none;}
@@ -165,9 +166,9 @@
             <div class="topbar">
                 <div class="prev"><</div>
                 <ul class="channels">
-                    <li>流行</li>
-                    <li class="current-channel">嘻哈</li>
-                    <li>古典</li>
+                    <li>我的收藏</li>
+                    <li class="current-channel">漫步春天</li>
+                    <li>秋日私语</li>
                 </ul>
                 <div class="next">></div>
             </div>
@@ -184,7 +185,7 @@
                         <div class="time-left">-<span class="minute">00</span>:<span class="second">00</span></div>
                     </div>
                     <ul class="control">
-                        <li class="like">喜欢</li>
+                        <li class="like">收藏</li>
                         <li class="play-or-pause">播放/停止</li>
                         <li class="next-song">下一首</li>
                         <li class="volume">
@@ -199,6 +200,84 @@
             <ul class="lyric">
                 <li>这里是歌词</li>
             </ul>
+            <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+            <script>
+                var channels,
+                    currentChannels,
+                    currentChannelsId = 2
+
+                $(window).ready(function(){
+                    //获频道信息
+                    $.get("https://jirenguapi.applinzi.com/fm/getChannels.php")
+                    .done(function(response){
+                        channels = JSON.parse(response).channels
+                        var favoriteObj = {name:"我的收藏",channel_id:"favorite"}
+                        var nullObj = {name:"",channel_id:""}
+                        channels.unshift(favoriteObj)
+                        //为了展示我的收藏和最后一个频道
+                        channels.unshift(nullObj)
+                        channels.push(nullObj)
+                        currentChannels = channels.slice(1, 4)
+                        console.log(currentChannels);
+                        updateChannels()
+                        getMusic()
+                    })
+                $('audio').attr('autoplay','true')
+                })
+                //切换下一个频道
+                $('.next').on('click',function(){
+                    if(currentChannelsId >= channels.length-2) return
+                    currentChannelsId++
+                    currentChannels = channels.slice(currentChannelsId-1, currentChannelsId+2)
+                    updateChannels()
+                    getMusic()
+                })
+                //切换上一个频道
+                $('.prev').on('click',function(){
+                    if(currentChannelsId <= 1) return
+                    currentChannelsId--
+                    currentChannels = channels.slice(currentChannelsId-1, currentChannelsId+2)
+                    updateChannels()
+                    getMusic()
+                })
+                //更新频道状态
+                function updateChannels(){
+                    for(var i=0; i<3; i++){
+                        $('.channels>li').eq(i).text(currentChannels[i].name);
+                    }
+                }
+                function getMusic(){
+                    $.get("https://jirenguapi.applinzi.com/fm/getSong.php",{channel: currentChannels[1].channel_id})
+                    .done(function(response){
+                        console.log(currentChannels[1].channel_id);
+                        currentSong = JSON.parse(response).song[0]
+                        console.log(currentSong)
+                        $('img').attr("src",currentSong.picture)
+                        $('.title').text(currentSong.title)
+                        $('.artist').text(currentSong.artist)
+                        $('audio').attr('src', currentSong.url)
+                        $('.played').css('width','0%')
+                        loadLrc(currentSong.sid);
+                    })
+                }
+                function loadLrc(sid){
+                    $.get("https://jirenguapi.applinzi.com/fm/getLyric.php",{sid:sid})
+                    .done(function(response){
+                        var lyric = JSON.parse(response).lyric
+                        console.log(lyric)
+                        $('.lyric').text(lyric)
+                        // parseLyric(lyric)
+                    })
+                }
+                function parseLyric(lrc) {
+                    var lyricsArr = lrc.split("\n")
+                    var lrcObj = {}
+                    lyricsArr.forEach(function(){
+                        var timeReg = /\[\d*:\d*((\.|\:)\d*)*\]/g
+                        var timeRegArr = lyricsArr.match(timeReg)
+                    })
+                }
+            </script>
         </div>
     </body>
 </html>
