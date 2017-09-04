@@ -6,17 +6,17 @@
         <meta name="referrer" content="never">
          <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
-            *{margin: 0; padding: 0}
-            ul, li{list-style: none;}
-            .fm-container{
+            * {margin: 0; padding: 0}
+            ul, li {list-style: none;}
+            .fm-container {
                 color: #222;
                 width: 450px;
                 height: 800px;
                 margin: 20px auto;
                 background-color: #d8ddda;
-                /* overflow: hidden; */
+                overflow: hidden;
             }
-            @media(max-width: 480px){
+            @media(max-width: 480px) {
                 .fm-container{
                     position: fixed;
                     top: 0;
@@ -27,10 +27,9 @@
                     margin: 0;
                     min-width: 320px;
                     height: auto;
-                    overflow: scroll;
                 }
             }
-            .topbar{
+            .topbar {
                 background: linear-gradient(#2c3c35, #313431);
                 color: rgb(126,128,126);
                 font-weight: bold;
@@ -39,35 +38,35 @@
                 align-items: center;
                 padding: 10px;
             }
-            .topbar>.prev, .topbar>.next{
+            .topbar>.prev, .topbar>.next {
                 font-size: 1.5em;
                 flex-grow: 0;
                 flex-shrink: 0;
                 color: rgb(126,128,126);
                 cursor: pointer;
             }
-            .topbar>.prev:hover, .topbar>.next:hover{
+            .topbar>.prev:hover, .topbar>.next:hover {
                 color: #fafcfc;
             }
             
-            .channels{
+            .channels {
                 display: flex;
                 justify-content: space-around;
                 align-items: center;
                 flex-grow: 1;
             }
-            .channels>.current-channel{
+            .channels>.current-channel {
                 color: rgb(233,237,234);
                 font-size: 1.2em;
             }
-            #main{
+            #main {
                 display: flex;
                 background-color: #e8edea;
                 color: #3f413f;
                 padding: 10px;
                 position: relative;
             }
-            #main>img{
+            #main>img {
                 width: 90px;
                 height: 90px;
                 display: block;
@@ -75,7 +74,7 @@
                 flex-shrink: 0;
                 margin: 20px;
             }
-            #main>.detail{
+            #main>.detail {
                 flex-grow: 1;
                 flex-shrink: 1;
                 display: flex;
@@ -83,21 +82,21 @@
                 justify-content: center;
                 text-align: center;
             }
-            #main>.detail>h3{
+            #main>.detail>h3  {
                 font-size: 0.9em;
             }
-            #main>.detail>h3.artist{
+            #main>.detail>h3.artist {
                 color: #7f8281;
             }
-            #main>.detail>h3.title{
+            #main>.detail>h3.title  {
                 font-size: 1.1em;
             }
-            #main>.detail>.time-line{
+            #main>.detail>.time-line {
                 display: flex;
                 margin: 3px 15px 3px 8px;
                 align-items: center;
             }
-            #main>.detail>.time-line>.line{
+            #main>.detail>.time-line>.line {
                 height: 3px;
                 flex-shrink: 1;
                 flex-grow: 1;
@@ -105,29 +104,29 @@
                 background-color: #ced9d3;
                 cursor: pointer;
             }
-            #main>.detail>.time-line>.line>.played{
+            #main>.detail>.time-line>.line>.played {
                 background-color: #91bdb4;
                 width: 50%;
                 height: 100%;
                 border-radius: 2px;
             }
-            #main>.detail>.time-line>.time-left{
+            #main>.detail>.time-line>.time-left {
                 font-size: 0.8em;
                 margin: 5px;
                 padding: 0 8px;
             }
-            #main>.detail>.control{
+            #main>.detail>.control {
                 display: flex;
                 justify-content: space-around;
                 font-size: 1em;
             }
-            #main>.detail>.control>li{
+            #main>.detail>.control>li {
                 cursor: pointer;
             }
-            #main>.detail>.control>li.volume{
+            #main>.detail>.control>li.volume {
                 position: relative;
             }
-            #main>.detail>.control>li.volume>.volume-controler{
+            #main>.detail>.control>li.volume>.volume-controler {
                 box-sizing: content-box;
                 position: absolute;
                 left: 100%;
@@ -138,28 +137,30 @@
                 margin: 5px;
                 visibility: hidden;
             }
-            #main>.detail>.control>li.volume>.volume-controler>.volume-height{
+            #main>.detail>.control>li.volume>.volume-controler>.volume-height {
                 width: 100%;
                 height: 0;
                 background-color: #ccc;
             }
-            #main>.detail>.control>li.volume:hover>.volume-controler{
+            #main>.detail>.control>li.volume:hover>.volume-controler {
                 visibility: visible;
                 opacity: 1;
             }
-            #main>.favorite-list{
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
+            .lyric-wrap {
+                height: 600px;
+                overflow-y: scroll;
+                
             }
-            .lyric{
+            .lyric {
                 text-align: center;
                 padding: 20px;
-                overflow-y: scroll;
                 margin-right: -20px;
-            }          
-    </style>
+
+            }  
+            .lyric>li {
+                margin: 5px 0;
+            }
+        </style>
     </head>
     <body> 
         <div class="fm-container">
@@ -197,14 +198,17 @@
                     </ul>
                 </div>
             </div>
-            <ul class="lyric">
-                <li>这里是歌词</li>
-            </ul>
+            <div class="lyric-wrap">
+                <ul class="lyric">
+                    <li>这里是歌词</li>       
+                </ul>
+            </div>
             <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
             <script>
                 var channels,
                     currentChannels,
-                    currentChannelsId = 2
+                    currentChannelsId = 2,
+                    lyrics = []
 
                 $(window).ready(function(){
                     //获频道信息
@@ -218,7 +222,6 @@
                         channels.unshift(nullObj)
                         channels.push(nullObj)
                         currentChannels = channels.slice(1, 4)
-                        console.log(currentChannels);
                         updateChannels()
                         getMusic()
                     })
@@ -249,9 +252,7 @@
                 function getMusic(){
                     $.get("https://jirenguapi.applinzi.com/fm/getSong.php",{channel: currentChannels[1].channel_id})
                     .done(function(response){
-                        console.log(currentChannels[1].channel_id);
                         currentSong = JSON.parse(response).song[0]
-                        console.log(currentSong)
                         $('img').attr("src",currentSong.picture)
                         $('.title').text(currentSong.title)
                         $('.artist').text(currentSong.artist)
@@ -263,18 +264,39 @@
                 function loadLrc(sid){
                     $.get("https://jirenguapi.applinzi.com/fm/getLyric.php",{sid:sid})
                     .done(function(response){
-                        var lyric = JSON.parse(response).lyric
-                        console.log(lyric)
-                        $('.lyric').text(lyric)
-                        // parseLyric(lyric)
+                        parseLyric(JSON.parse(response).lyric)
+                        renderLrc()
                     })
                 }
                 function parseLyric(lrc) {
                     var lyricsArr = lrc.split("\n")
-                    var lrcObj = {}
-                    lyricsArr.forEach(function(){
-                        var timeReg = /\[\d*:\d*((\.|\:)\d*)*\]/g
-                        var timeRegArr = lyricsArr.match(timeReg)
+                    lyricsArr.forEach(function(lyrItem){
+                        var lrcObj = {}
+                        var timeReg = /\[(?:\d+:)\d+.\d+]/g,
+                            lyrReg = /\][^\[].*/g
+                        var timeRegArr = lyrItem.match(timeReg)
+                        var lrcRegArr = lyrItem.match(/\][^\[].*/g)
+                        if(timeRegArr!==null){
+                            timeRegArr.forEach(function(timeItem){
+                            var minute = timeItem.match(/\[\d+:/)[0].slice(1,3),
+                                second =timeItem.match(/\:\d+.\d+/)[0].slice(1,6),
+                                time = parseInt(minute)*60 + parseFloat(second)
+                                if(lrcRegArr !== null){
+                                    lrcObj.time = time 
+                                    lrcObj.content = lrcRegArr[0].slice(1,lrcRegArr[0].length)
+                                }
+                           })
+                        }
+                        if(lrcObj.hasOwnProperty('time') &&lrcObj.time !==0.01){
+                            lyrics.push(lrcObj)
+                        }
+                    })                   
+                }
+                function renderLrc(){
+                    $('.lyric').empty()
+                    $.each(lyrics,function(key,val){
+                        var html = `<li>${val.content}<li>`
+                        $('.lyric').append(html)
                     })
                 }
             </script>
