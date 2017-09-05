@@ -212,10 +212,13 @@
                 (function(){
                     var channels,
                     currentChannels,
-                    playing
+                    playing,
+                    time,
+                    duration
 
                 var currentChannelsId = 2,
-                    lyrics = []
+                    lyrics = [],
+                    $audio = $('audio')[0]
                 $(document).ready(function(){
                     //没有高度无法滚动
                     var lyricBoxHeight = $('.fm-container').innerHeight()-$('#main').outerHeight()-$('.topbar').outerHeight()-60
@@ -294,20 +297,24 @@
                 })
                 //加载时间
                 $('audio').on('canplay', function(){
-                    var $audio = $('audio')[0],
-                        duration = $audio.duration,
-                        time = 0,
+                    
+                        duration = $audio.duration
                         clock = setInterval(function(){
                             if(time >= Math.floor(duration)){
                                 clearInterval(clock)
+                                return
                             }
                             time = $audio.currentTime;
-                            var timeRate = Math.floor(time/duration*100) + '%';
+                            var timeRate = Math.floor(time/duration*100) + '%'
                             $('.played').css('width', timeRate);
                             leftTime(duration - time);
-                            console.log(duration);
-                            console.log(time);
                     }, 1000);
+                })
+                //调节播放进度
+                $('.time-line>.line').on('click', function(e){
+                    var position = e.pageX - $(this).offset().left
+                    time = position/$(this).innerWidth()*duration
+                    $audio.currentTime = time;
                 })
 
                 function highlight(index){
