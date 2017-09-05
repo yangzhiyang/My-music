@@ -5,6 +5,7 @@
         <meta charset="UTF-8">
         <meta name="referrer" content="never">
          <meta name="viewport" content="width=device-width, initial-scale=1">
+         <link rel="stylesheet" href="iconfont/iconfont.css">
         <style>
             * {margin: 0; padding: 0}
             ul, li {list-style: none;}
@@ -14,6 +15,7 @@
                 height: 800px;
                 margin: 20px auto;
                 background-color: #d8ddda;
+                position: relative;
                 overflow: hidden;
             }
             @media(max-width: 480px) {
@@ -123,6 +125,10 @@
             #main>.detail>.control>li {
                 cursor: pointer;
             }
+            #main>.detail>.control>li:hover {
+                opacity: .7;
+            }
+
             #main>.detail>.control>li.volume {
                 position: relative;
             }
@@ -134,32 +140,31 @@
                 height: 50px;
                 width: 2px;
                 background-color: #333;
-                margin: 5px;
+                border:  5px solid #d8ddda;
                 visibility: hidden;
             }
             #main>.detail>.control>li.volume>.volume-controler>.volume-height {
                 width: 100%;
-                height: 0;
+                height: 40px;
                 background-color: #ccc;
             }
             #main>.detail>.control>li.volume:hover>.volume-controler {
                 visibility: visible;
                 opacity: 1;
             }
-            .lyric-wrap {
-                height: 600px;
-                overflow-y: scroll;
-                
-            }
             .lyric {
                 text-align: center;
                 padding: 20px;
                 margin-right: -20px;
-
+                overflow: scroll;
             }  
             .lyric>li {
                 margin: 5px 0;
             }
+            .lyric>li.current-line{
+                font-weight: bold; 
+                color: #518d84;
+            }        
         </style>
     </head>
     <body> 
@@ -186,11 +191,10 @@
                         <div class="time-left">-<span class="minute">00</span>:<span class="second">00</span></div>
                     </div>
                     <ul class="control">
-                        <li class="like">收藏</li>
-                        <li class="play-or-pause">播放/停止</li>
-                        <li class="next-song">下一首</li>
-                        <li class="volume">
-                            音量
+                        <li class="like iconfont icon-like"></li>
+                        <li class="play-or-pause iconfont icon-play"></li>
+                        <li class="next-song iconfont icon-next"></li>
+                        <li class="volume iconfont icon-volume">
                             <div class="volume-controler">                                
                                 <div class="volume-height"></div>
                             </div>
@@ -200,17 +204,22 @@
             </div>
             <div class="lyric-wrap">
                 <ul class="lyric">
-                    <li>这里是歌词</li>       
+                          
                 </ul>
             </div>
             <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
             <script>
-                var channels,
+                (function(){
+                    var channels,
                     currentChannels,
-                    currentChannelsId = 2,
-                    lyrics = []
+                    playing
 
+                var currentChannelsId = 2,
+                    lyrics = []
                 $(window).ready(function(){
+                    //没有高度无法滚动
+                    var lyricBoxHeight = $('.fm-container').innerHeight()-$('#main').outerHeight()-$('.topbar').outerHeight()-60
+                    $('.lyric').css('height',lyricBoxHeight+'px');
                     //获频道信息
                     $.get("https://jirenguapi.applinzi.com/fm/getChannels.php")
                     .done(function(response){
@@ -224,8 +233,9 @@
                         currentChannels = channels.slice(1, 4)
                         updateChannels()
                         getMusic()
+                        playing = true
                     })
-                $('audio').attr('autoplay','true')
+                    $('audio').attr('autoplay','true')
                 })
                 //切换下一个频道
                 $('.next').on('click',function(){
@@ -243,6 +253,85 @@
                     updateChannels()
                     getMusic()
                 })
+                //换歌
+                $('.next-song').on('click', function(){
+                    getMusic();
+                }) 
+                //播放、暂停
+                $('.play-or-pause').on('click',function(){
+                    playing ? $('audio')[0].pause():$('audio')[0].play()
+                    playing ? $(this).removeClass('icon-play').addClass('icon-pause') : $(this).removeClass('icon-pause').addClass('icon-play')
+                    playing = !playing
+                    // if(playing){
+                    //     $('audio')[0].pause()
+                    //     playing = false
+                    // }else{
+                    //     $('audio')[0].play()
+                    //     playing = true
+                    // }
+                })
+                //监听是否播放完毕
+                $('audio').on('ended', function(){
+                    getMusic();
+                })
+                 //监听播放位置    
+                $('audio').on('timeupdate',function(){
+                    var currentTime = this.currentTime
+                    var lastCurrent = $('.lyric>li.current-line:last')
+                    var currentOffset = lastCurrent.offset()
+                    var lyricTop = $('.lyric-wrap').offset().top
+                    var lyricsHeight = $('.lyric-wrap').outerHeight()
+                    var lineHeight = $('.lyric').children('li').eq(0).outerHeight()+5
+                    var num = 1
+                    lyrics.forEach(function(lyric,index){
+                        if( currentTime > lyric[0]){
+                            highlight(index)
+                            console.log('最后一行歌词');
+                            console.log(lastCurrent);
+                            console.log('歌词界面的一半高度');
+                            console.log(lyricTop+lyricsHeight/2);
+
+                            if(currentOffset){
+                                console.log('最后一行歌词的距离');
+
+                                console.log(currentOffset.top-lyricTop,index);
+                                console.log(lyricsHeight/2);
+
+                            if(lastCurrent.offset().top-lyricTop>lyricsHeight/2){
+                                console.log(1);
+                                $('.lyric').scrollTop(lineHeight*num)
+                                num++
+                                
+                            }
+                        }
+
+
+                        }
+                    }) 
+                                      
+                    // var currentPosition = $('.lyric>li.current-line:last').offset()
+                    // if(currentPosition){
+                    //     currentTop = currentPosition.top
+                    //     $('.lyric').scrollTop(lineHeight*2)
+
+                    //     console.log(currentTop);
+                    //     if((currentTop-lyricTop)>lyricsHeight/2){
+                    //         console.log(currentTop-lyricTop)
+                    //         console.log(lyricsHeight/2);
+                    //         currentTop -=lineHeight*2
+                    //     }
+                    
+                    // }
+                    
+                    // var currentHeight = $('.lyric>li.current-line:last').offset()
+                    // console.log(currentHeight);
+
+                })
+                function highlight(index){
+                    if(!$('.lyric>li').eq(index).hasClass('current-line')){
+                        $('.lyric>li').eq(index).addClass('current-line')
+                    }
+                }
                 //更新频道状态
                 function updateChannels(){
                     for(var i=0; i<3; i++){
@@ -252,53 +341,64 @@
                 function getMusic(){
                     $.get("https://jirenguapi.applinzi.com/fm/getSong.php",{channel: currentChannels[1].channel_id})
                     .done(function(response){
+                        //获取新歌曲时将上一首歌曲的歌词置空
+                        lyrics = []
                         currentSong = JSON.parse(response).song[0]
                         $('img').attr("src",currentSong.picture)
                         $('.title').text(currentSong.title)
                         $('.artist').text(currentSong.artist)
                         $('audio').attr('src', currentSong.url)
-                        $('.played').css('width','0%')
-                        loadLrc(currentSong.sid);
+                        $('.played').css('width','0%')                       
+                        loadLrc(currentSong.sid)
+                        playing = true
+                        $('.play-or-pause').removeClass('icon-pause').addClass('icon-play')
                     })
                 }
+                //加载歌词
                 function loadLrc(sid){
                     $.get("https://jirenguapi.applinzi.com/fm/getLyric.php",{sid:sid})
                     .done(function(response){
                         parseLyric(JSON.parse(response).lyric)
-                        renderLrc()
+                        $('.lyric').html(lyrics)
+                        renderLrc()                  
                     })
                 }
+                //解析歌词
                 function parseLyric(lrc) {
                     var lyricsArr = lrc.split("\n")
                     lyricsArr.forEach(function(lyrItem){
-                        var lrcObj = {}
+                        var lrcArr = []
                         var timeReg = /\[(?:\d+:)\d+.\d+]/g,
                             lyrReg = /\][^\[].*/g
                         var timeRegArr = lyrItem.match(timeReg)
                         var lrcRegArr = lyrItem.match(/\][^\[].*/g)
                         if(timeRegArr!==null){
                             timeRegArr.forEach(function(timeItem){
-                            var minute = timeItem.match(/\[\d+:/)[0].slice(1,3),
-                                second =timeItem.match(/\:\d+.\d+/)[0].slice(1,6),
-                                time = parseInt(minute)*60 + parseFloat(second)
+                            var minute = Number(String(timeItem.match(/\[\d*/i)).slice(1)),
+                                second = Number(String(timeItem.match(/\:\d*/i)).slice(1)),
+                                time = minute * 60 + second
                                 if(lrcRegArr !== null){
-                                    lrcObj.time = time 
-                                    lrcObj.content = lrcRegArr[0].slice(1,lrcRegArr[0].length)
+                                    lrcArr.push(time,lrcRegArr[0].slice(1,lrcRegArr[0].length))
                                 }
+                                
                            })
                         }
-                        if(lrcObj.hasOwnProperty('time') &&lrcObj.time !==0.01){
-                            lyrics.push(lrcObj)
-                        }
-                    })                   
-                }
+                        //获得['时间','歌词']
+                        if(lrcArr.length && lrcArr[0] !==0){
+                            lyrics.push(lrcArr)
+                    }
+                })
+             }
+                
                 function renderLrc(){
                     $('.lyric').empty()
+                    console.log(lyrics);
                     $.each(lyrics,function(key,val){
-                        var html = `<li>${val.content}<li>`
+                        var html = `<li>${val[1]}</li>`
                         $('.lyric').append(html)
                     })
                 }
+                })()
             </script>
         </div>
     </body>
