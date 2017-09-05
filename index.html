@@ -57,6 +57,9 @@
                 align-items: center;
                 flex-grow: 1;
             }
+            .channels {
+                cursor: pointer; 
+            }    
             .channels>.current-channel {
                 color: rgb(233,237,234);
                 font-size: 1.2em;
@@ -106,6 +109,9 @@
                 background-color: #ced9d3;
                 cursor: pointer;
             }
+            #main>.detail>.time-line>.line:hover {
+                height: 6px;
+            }
             #main>.detail>.time-line>.line>.played {
                 background-color: #91bdb4;
                 width: 50%;
@@ -143,9 +149,12 @@
                 border:  5px solid #d8ddda;
                 visibility: hidden;
             }
-            #main>.detail>.control>li.volume>.volume-controler>.volume-height {
+            #main>.detail>.control>li.volume>.volume-controler:hover {
+                width: 4px;
+            }
+                #main>.detail>.control>li.volume>.volume-controler>.volume-height {
                 width: 100%;
-                height: 40px;
+                height: 0;
                 background-color: #ccc;
             }
             #main>.detail>.control>li.volume:hover>.volume-controler {
@@ -252,6 +261,11 @@
                     if(currentChannelsId <= 1) return
                     currentChannelsId--
                     currentChannels = channels.slice(currentChannelsId-1, currentChannelsId+2)
+                    if(currentChannels[1].channel_id ==='favorite'){
+                        alert(1)
+                        currentChannelsId++
+                        currentChannels = channels.slice(currentChannelsId-1, currentChannelsId+2)
+                    }
                     updateChannels()
                     getMusic()
                 })
