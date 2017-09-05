@@ -216,7 +216,7 @@
 
                 var currentChannelsId = 2,
                     lyrics = []
-                $(window).ready(function(){
+                $(document).ready(function(){
                     //没有高度无法滚动
                     var lyricBoxHeight = $('.fm-container').innerHeight()-$('#main').outerHeight()-$('.topbar').outerHeight()-60
                     $('.lyric').css('height',lyricBoxHeight+'px');
@@ -233,12 +233,11 @@
                         currentChannels = channels.slice(1, 4)
                         updateChannels()
                         getMusic()
-                        playing = true
                     })
                     $('audio').attr('autoplay','true')
                 })
                 //切换下一个频道
-                $('.next').on('click',function(){
+                $('.next,.channels>li:last').on('click',function(){
                     if(currentChannelsId >= channels.length-2) return
                     currentChannelsId++
                     currentChannels = channels.slice(currentChannelsId-1, currentChannelsId+2)
@@ -246,7 +245,7 @@
                     getMusic()
                 })
                 //切换上一个频道
-                $('.prev').on('click',function(){
+                $('.prev,.channels>li:first').on('click',function(){
                     if(currentChannelsId <= 1) return
                     currentChannelsId--
                     currentChannels = channels.slice(currentChannelsId-1, currentChannelsId+2)
@@ -286,47 +285,31 @@
                     lyrics.forEach(function(lyric,index){
                         if( currentTime > lyric[0]){
                             highlight(index)
-                            console.log('最后一行歌词');
-                            console.log(lastCurrent);
-                            console.log('歌词界面的一半高度');
-                            console.log(lyricTop+lyricsHeight/2);
-
-                            if(currentOffset){
-                                console.log('最后一行歌词的距离');
-
-                                console.log(currentOffset.top-lyricTop,index);
-                                console.log(lyricsHeight/2);
-
-                            if(lastCurrent.offset().top-lyricTop>lyricsHeight/2){
-                                console.log(1);
-                                $('.lyric').scrollTop(lineHeight*num)
-                                num++
-                                
-                            }
-                        }
-
-
+                                if(currentOffset&&lastCurrent.offset().top-lyricTop>lyricsHeight/2){
+                                    $('.lyric').scrollTop(lineHeight*num)
+                                num++                                
+                                }   
                         }
                     }) 
-                                      
-                    // var currentPosition = $('.lyric>li.current-line:last').offset()
-                    // if(currentPosition){
-                    //     currentTop = currentPosition.top
-                    //     $('.lyric').scrollTop(lineHeight*2)
-
-                    //     console.log(currentTop);
-                    //     if((currentTop-lyricTop)>lyricsHeight/2){
-                    //         console.log(currentTop-lyricTop)
-                    //         console.log(lyricsHeight/2);
-                    //         currentTop -=lineHeight*2
-                    //     }
-                    
-                    // }
-                    
-                    // var currentHeight = $('.lyric>li.current-line:last').offset()
-                    // console.log(currentHeight);
-
                 })
+                //加载时间
+                $('audio').on('canplay', function(){
+                    var $audio = $('audio')[0],
+                        duration = $audio.duration,
+                        time = 0,
+                        clock = setInterval(function(){
+                            if(time >= Math.floor(duration)){
+                                clearInterval(clock)
+                            }
+                            time = $audio.currentTime;
+                            var timeRate = Math.floor(time/duration*100) + '%';
+                            $('.played').css('width', timeRate);
+                            leftTime(duration - time);
+                            console.log(duration);
+                            console.log(time);
+                    }, 1000);
+                })
+
                 function highlight(index){
                     if(!$('.lyric>li').eq(index).hasClass('current-line')){
                         $('.lyric>li').eq(index).addClass('current-line')
@@ -378,7 +361,7 @@
                                 second = Number(String(timeItem.match(/\:\d*/i)).slice(1)),
                                 time = minute * 60 + second
                                 if(lrcRegArr !== null){
-                                    lrcArr.push(time,lrcRegArr[0].slice(1,lrcRegArr[0].length))
+                                    lrcArr.push(time,lrcRegArr[0].slice(1))
                                 }
                                 
                            })
@@ -386,9 +369,9 @@
                         //获得['时间','歌词']
                         if(lrcArr.length && lrcArr[0] !==0){
                             lyrics.push(lrcArr)
-                    }
-                })
-             }
+                        }
+                    })
+                }
                 
                 function renderLrc(){
                     $('.lyric').empty()
@@ -397,6 +380,24 @@
                         var html = `<li>${val[1]}</li>`
                         $('.lyric').append(html)
                     })
+                }
+                //展示歌曲剩余时间
+                function leftTime(num){
+                    var timeNum = Math.floor(num);
+                    var second = timeNum%60;
+                    var minute = Math.floor(timeNum/60);
+                    if(minute<10){
+                        $('.minute').html('0'+minute);
+                    }
+                    else{
+                        $('.minute').html(miminuten);
+                    }
+                    if(second<10){
+                        $('.second').html('0'+second);
+                    }
+                    else{
+                        $('.second').html(second);
+                    }                    
                 }
                 })()
             </script>
