@@ -536,11 +536,19 @@
                         if(likeSongsList.num<likeSongsList.songsList.length){
                             currentSong = likeSongsList.songsList[likeSongsList.num]
                             likeSongsList.num += 1                           
-                        }else{
+                        }else if(likeSongsList.songsList.length>0){
                             likeSongsList.num = 0
                             currentSong = likeSongsList.songsList[likeSongsList.num]
-                        }                  
-                        loadDeatils()                        
+                        }else{
+                            currentChannelsId++
+                            currentChannels = channels.slice(currentChannelsId-1, currentChannelsId+2)
+                            $('.channels>li:first').css('opacity','1')
+                            alert('我的收藏‘还是空的哦，先从别的频道收藏几首喜欢的音乐吧！')
+                            updateChannels()
+                            getMusic()
+                        }
+                        sid = currentSong.sid;                 
+                        loadDeatils(sid)                        
                         $('.play-or-pause').removeClass('icon-pause').addClass('icon-play')
                     }else{
                         $.get("https://jirenguapi.applinzi.com/fm/getSong.php",{channel: currentChannels[1].channel_id})
@@ -593,7 +601,6 @@
                 //解析歌词
                 function parseLyric(lrc) {
                     var lyricsArr = lrc.split("\n")
-                    console.log(lyricsArr);
                     lyricsArr.forEach(function(lyrItem){
                         var lrcArr = []
                         var timeReg = /\[(?:\d+:)\d+.\d+]/g,
