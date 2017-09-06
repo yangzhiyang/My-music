@@ -357,6 +357,15 @@
                     if(currentChannels[1].channel_id ==='favorite'){
                         $('.channels>li:first').css('opacity','0')
                     }
+                    if(currentChannels[1].channel_id === 'favorite'){
+                        if(likeSongsList.songsList.length === 0){
+                            alert('我的收藏‘还是空的哦，先从别的频道收藏几首喜欢的音乐吧！')
+                            currentChannelsId++
+                            currentChannels = channels.slice(currentChannelsId-1, currentChannelsId+2)
+                            $('.channels>li:first').css('opacity','1')
+
+                        }
+                    }                    
                     updateChannels()
                     getMusic()
                 })
@@ -482,16 +491,20 @@
                 })
 
                 function loadPlaylist(){
-                    likeSongsList.songsList =JSON.parse(localStorage.getItem('likeSongs')) || []
-                    var html = ''
-                    likeSongsList.songsList.forEach(function(val,index){
-                        html += `<li>
-                                    <div class="list-item-title">${val.title}</div>
-                                    <div class="list-item-artist">${val.artist}</div>
-                                    <div class="delete">删除</div>
-                                 </li>`
-                    })
-                    $('.playlist').empty().append(html)
+                    console.log(JSON.parse(localStorage.getItem('likeSongs')));
+                    if(localStorage.getItem('likeSongs')){
+                        likeSongsList.songsList =JSON.parse(localStorage.getItem('likeSongs'))
+                        var html = ''
+                        likeSongsList.songsList.forEach(function(val,index){
+                            html += `<li>
+                                        <div class="list-item-title">${val.title}</div>
+                                        <div class="list-item-artist">${val.artist}</div>
+                                        <div class="delete">删除</div>
+                                     </li>`
+                        })
+                        $('.playlist').empty().append(html)
+   
+                    }
                 }
                 function loud(volume){
                     $('audio')[0].volume = 0
@@ -517,6 +530,7 @@
                 function getMusic(){
                     var arr = []
                     if(currentChannels[1].channel_id === 'favorite'){
+                        
                         if(likeSongsList.num<likeSongsList.songsList.length){
                             currentSong = likeSongsList.songsList[likeSongsList.num]
                             likeSongsList.num += 1                           
@@ -527,17 +541,17 @@
                     sid = currentSong.sid
                     loadDeatils(sid)
                     likeSongsList.songsList.forEach(function(val,index){
-                            arr.push(val.sid)
-                        })
-                        if(arr.indexOf(sid)>-1){
-                            console.log(1)
-                            isLike = true
-                            $('.like').eq(0).css('color','red')
-                            console.log(2)
-                        }else{
-                            isLike = false
-                            $('.like').eq(0).css('color','#333')
-                        }                   
+                        arr.push(val.sid)
+                    })
+                    if(arr.indexOf(sid)>-1){
+                        console.log(1)
+                        isLike = true
+                        $('.like').eq(0).css('color','red')
+                        console.log(2)
+                    }else{
+                        isLike = false
+                        $('.like').eq(0).css('color','#333')
+                    }                   
 
                     }else{
                         $.get("https://jirenguapi.applinzi.com/fm/getSong.php",{channel: currentChannels[1].channel_id})
