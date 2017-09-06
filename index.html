@@ -227,7 +227,8 @@
 
                 var currentChannelsId = 2,
                     lyrics = [],
-                    $audio = $('audio')[0]
+                    $audio = $('audio')[0],
+                    isSilence = false
                 $(document).ready(function(){
                     //没有高度无法滚动
                     var lyricBoxHeight = $('.fm-container').innerHeight()-$('#main').outerHeight()-$('.topbar').outerHeight()-60
@@ -290,7 +291,8 @@
                 $('audio').on('ended', function(){
                     getMusic();
                 })
-                 //监听播放位置    
+                 //监听播放位置 
+                 var num = 1   
                 $('audio').on('timeupdate',function(){
                     var currentTime = this.currentTime
                     var lastCurrent = $('.lyric>li.current-line:last')
@@ -298,13 +300,13 @@
                     var lyricTop = $('.lyric-wrap').offset().top
                     var lyricsHeight = $('.lyric-wrap').outerHeight()
                     var lineHeight = $('.lyric').children('li').eq(0).outerHeight()+5
-                    var num = 1
+                    
                     lyrics.forEach(function(lyric,index){
                         if( currentTime > lyric[0]){
                             highlight(index)
                                 if(currentOffset&&lastCurrent.offset().top-lyricTop>lyricsHeight/2){
                                     $('.lyric').scrollTop(lineHeight*num)
-                                num++                                
+                                    num++                                
                                 }   
                         }
                     }) 
@@ -330,7 +332,40 @@
                     time = position/$(this).innerWidth()*duration
                     $audio.currentTime = time;
                 })
-
+                //调解音量
+                $('.volume-controler').on('click',function(e){
+                    event.stopPropagation()
+                    var position = e.pageY - $(this).offset().top
+                    volume = (position-5)/50
+                    if(volume >=1){
+                        loud(volume)
+                    }else if(volume <=0){
+                        quiet(volume)
+                    }else{
+                        $('audio')[0].volume = 1-volume
+                        $(this).children('.volume-height').css('height',volume*100+'%')
+                        $('.volume').css('color','#3f413f')
+                    }
+                })
+                //直接静音和恢复
+                $('.volume').on('click',function(){
+                    isSilence = !isSilence
+                    if(!isSilence){
+                        quiet(0)
+                    }else{
+                        loud(1)                        
+                    }
+                })
+                function loud(volume){
+                    $('audio')[0].volume = 0
+                    $('.volume-height').css('height','100%')
+                    $('.volume').css('color','red')
+                }
+                function quiet(volume){
+                    $('audio')[0].volume = 1
+                    $('.volume-height').css('height','0')
+                    $('.volume').css('color','#3f413f')
+                }
                 function highlight(index){
                     if(!$('.lyric>li').eq(index).hasClass('current-line')){
                         $('.lyric>li').eq(index).addClass('current-line')
@@ -347,12 +382,16 @@
                     .done(function(response){
                         //获取新歌曲时将上一首歌曲的歌词置空
                         lyrics = []
+                        num = 1
                         currentSong = JSON.parse(response).song[0]
                         $('img').attr("src",currentSong.picture)
                         $('.title').text(currentSong.title)
                         $('.artist').text(currentSong.artist)
                         $('audio').attr('src', currentSong.url)
-                        $('.played').css('width','0%')                       
+                        $('.played').css('width','0%') 
+                        //获取新歌后将 '.lyric'元素滚动置零
+                        $('.lyric').scrollTop(0)
+                    
                         loadLrc(currentSong.sid)
                         playing = true
                         $('.play-or-pause').removeClass('icon-pause').addClass('icon-play')
@@ -396,7 +435,6 @@
                 
                 function renderLrc(){
                     $('.lyric').empty()
-                    console.log(lyrics);
                     $.each(lyrics,function(key,val){
                         var html = `<li>${val[1]}</li>`
                         $('.lyric').append(html)
