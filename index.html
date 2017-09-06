@@ -405,7 +405,6 @@
                 })
                 //加载时间
                 $('audio').on('canplay', function(){
-                    
                         duration = $audio.duration
                         clock = setInterval(function(){
                             if(time >= Math.floor(duration)){
@@ -461,6 +460,7 @@
                         loadPlaylist()
                     }else{
                         $(this).css('color','#3f413f')
+                        sid = currentSong.sid
                         likeSongsList.songsList.forEach(function(val,index){
                             if(val.sid == sid){
                                 likeSongsList.songsList.splice(index,1) 
@@ -529,30 +529,19 @@
                 }
                 function getMusic(){
                     var arr = []
-                    if(currentChannels[1].channel_id === 'favorite'){
-                        
+                    playing = true
+                    if(currentChannels[1].channel_id === 'favorite'){ 
+                        isLike = true
+                        $('.like').eq(0).css('color','red')     
                         if(likeSongsList.num<likeSongsList.songsList.length){
                             currentSong = likeSongsList.songsList[likeSongsList.num]
                             likeSongsList.num += 1                           
                         }else{
                             likeSongsList.num = 0
                             currentSong = likeSongsList.songsList[likeSongsList.num]
-                        }
-                    sid = currentSong.sid
-                    loadDeatils(sid)
-                    likeSongsList.songsList.forEach(function(val,index){
-                        arr.push(val.sid)
-                    })
-                    if(arr.indexOf(sid)>-1){
-                        console.log(1)
-                        isLike = true
-                        $('.like').eq(0).css('color','red')
-                        console.log(2)
-                    }else{
-                        isLike = false
-                        $('.like').eq(0).css('color','#333')
-                    }                   
-
+                        }                  
+                        loadDeatils()                        
+                        $('.play-or-pause').removeClass('icon-pause').addClass('icon-play')
                     }else{
                         $.get("https://jirenguapi.applinzi.com/fm/getSong.php",{channel: currentChannels[1].channel_id})
                         .done(function(response){
@@ -581,7 +570,7 @@
                             }                   
                             
                         })
-                        }
+                    }
                 }
                 function loadDeatils(sid){  
                     lyrics = []  
