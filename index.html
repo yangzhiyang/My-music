@@ -402,7 +402,7 @@
                         lyrics.forEach(function(lyric,index){
                             if( currentTime > lyric.time){
                                 highlight(index)
-                                    if(currentOffset&&lastCurrent.offset().top-lyricTop>lyricsHeight/2){
+                                    if(currentOffset&&lastCurrent.offset().top-lyricTop>lyricsHeight/2-100){
                                         $('.lyric').scrollTop(lineHeight*num)
                                         num++                                
                                     }   
@@ -465,7 +465,7 @@
                             localStorage.setItem('likeSongs', JSON.stringify(likeSongsList.songsList))
                             loadPlaylist()
                         }else{
-                            $(this).css('color','#3f413f')
+                            $(this).css('color','#333')
                             sid = currentSong.sid
                             likeSongsList.songsList.forEach(function(val,index){
                                 if(val.sid == sid){
@@ -526,6 +526,7 @@
                 function highlight(index){
                     if(!$('.lyric>li').eq(index).hasClass('current-line')){
                         $('.lyric>li').eq(index).addClass('current-line')
+                        $('.lyric>li.current-line').prev().removeClass('current-line') 
                     }
                 }
                 //更新频道状态
@@ -630,7 +631,6 @@
                                     lyrObj.time =  time
                                     lyrObj.content = content
                                 }
-                                 console.log(lyrObj);
                            })
                         }
                         //api返回的歌词存在“[00:02:00][01:02:00] 同一句歌词”，改用{'时间','歌词'}保存歌词数据
@@ -642,6 +642,7 @@
                     lyrics.sort(function(a,b){
                         return a.time-b.time;
                     })
+                    console.log(lyrics);
                     return lyrics
                 }
                 
