@@ -1,22 +1,20 @@
 var Music = (function(){
     function _Music(){
         this.sid = '';
-        this.currentChannelsId = 2;
         this.isSilence = false;
         this.isLike = false;
         this.isChecked = false; 
         this.isCilcked = false;
-        this.isPlaylist = false;       
+        this.isPlaylist = false;
+        this.isRequesting = false;      
         this.likeSongsList ={
             num: 0,
             songsList:[]
         };
-        this.currentChannels = [];
-        this.channels = [];
+        this.duration;
         this.playing = true;
         this.currentSong = {};
         this.lyrics = [];
-        this.time;
         this.distance;
         this.getStart();
     }
@@ -37,7 +35,7 @@ var Music = (function(){
                 html += `<li>
                             <div class="list-item-title">${val.title}</div>
                             <div class="list-item-artist">${val.artist}</div>
-                            <div class="delete">删除</div>
+                            <div class="delete iconfont icon-shanchu"></div>
                          </li>`
             })
             $('.playlist').empty().append(html)
@@ -95,11 +93,11 @@ var Music = (function(){
                     $('.photo').css({'background':'url('+_this.currentSong.picture+')','background-size':'cover','display':'block'})            
                 }
             })
-        }            
+        }
+
     }
     _Music.prototype.initPlayerProgress = function(){
         var _this = this;
-        var duration;
         var volume;
         //换歌
         $('.next-song').on('click', function(){
@@ -140,25 +138,27 @@ var Music = (function(){
                 }
             }) 
         })        
-        //加载时间
+        //加载进度条
         $('audio').on('canplay', function(){ 
-            duration = $('audio')[0].duration
+            var time = 0;
+            _this.duration = $('audio')[0].duration     
             clock = setInterval(function(){
-                if(this.time >= Math.floor(duration)){
+                if(time >= Math.floor(_this.duration)){
                     clearInterval(clock)
                     return
                 }
-                this.time = $('audio')[0].currentTime;
-                var timeRate = Math.floor(time/duration*100) + '%'
+                time = $('audio')[0].currentTime;
+                console.log(time,_this.duration);
+                var timeRate = Math.floor(time/_this.duration*100) + '%'
                 $('.time-line').css('width', timeRate);
-                _this.leftTime(duration - time);
+                _this.leftTime(_this.duration - time);
         }, 1000);
         })
         //调节播放进度
         $('.time-contorl').on('click', function(e){
             var position = e.pageX - $(this).offset().left
-            var time = position/$(this).innerWidth()*duration
-            $('audio')[0].currentTime = time;
+            var leftTime = position/$(this).innerWidth()*_this.duration
+            $('audio')[0].currentTime = leftTime;
         })
         //调解音量
         $('.volume-controler').on('click',function(e){
@@ -237,12 +237,14 @@ var Music = (function(){
             if(_this.isChecked){
                 $('#music-main img,.like-list').css('display','none');
                 $('#music-lyric').css('display','block');
-                $('.photo').css({'background':'url('+_this.currentSong.picture+')','background-size':'cover','display':'block'})            
+                $('.photo').css({'background':'url('+_this.currentSong.picture+')','background-size':'cover','display':'block'});
+                $('.lyric-show').removeClass('icon-geci').addClass('icon-back')
                 _this.isCilcked = false;
             }else{
                 $('#music-main img').css('display','inline-block');
                 $('#music-lyric').css('display','none');
                 $('.photo').css('background','');
+                $('.lyric-show').removeClass('icon-back').addClass('icon-geci')
                 _this.isCilcked = false;
                 _this.isPlaylist = false;
             }
