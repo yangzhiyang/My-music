@@ -4,6 +4,9 @@ var Music = (function(){
         this.currentChannelsId = 2;
         this.isSilence = false;
         this.isLike = false;
+        this.isChecked = false; 
+        this.isCilcked = false;
+        this.isPlaylist = false;       
         this.likeSongsList ={
             num: 0,
             songsList:[]
@@ -13,41 +16,18 @@ var Music = (function(){
         this.playing = true;
         this.currentSong = {};
         this.lyrics = [];
-        this.lyricsNum = 1;
         this.time;
-        this.getChannels();
+        this.distance;
+        this.getStart();
     }
-    _Music.prototype.getChannels = function(){
+    _Music.prototype.getStart = function(){
         var _this = this
-        $(document).ready(function(){
-            
-            console.log(this);
-            //没有高度无法滚动
-            var lyricBoxHeight = $('.fm-container').innerHeight()-$('#main').outerHeight()-$('.topbar').outerHeight()-60;
-            $('.lyric').css('height',lyricBoxHeight+'px');
-            
-            //获频道信息
-            $.get("https://jirenguapi.applinzi.com/fm/getChannels.php")
-            .done(function(response){
-                console.log(this);
-                _this.renderChannels(response);
-                _this.loadPlaylist();
-                _this.updateChannels();
-                _this.getMusic();
-            })
+        $(document).ready(function(){            
+            _this.loadPlaylist();
+            _this.getMusic();    
             $('audio').attr('autoplay','true');
             _this.initPlayerProgress();
         })
-    }
-    _Music.prototype.renderChannels = function(response){
-        this.channels = JSON.parse(response).channels;
-        var favoriteObj = {name:"我的收藏",channel_id:"favorite"};
-        var nullObj = {name:"占四个字",channel_id:""};
-        this.channels.unshift(favoriteObj)
-        //为了展示我的收藏和最后一个频道
-        this.channels.unshift(nullObj)
-        this.channels.push(nullObj)
-        this.currentChannels = this.channels.slice(1, 4)
     }
     _Music.prototype.loadPlaylist = function(){
         if(localStorage.getItem('likeSongs')){
@@ -63,18 +43,13 @@ var Music = (function(){
             $('.playlist').empty().append(html)
         }
     }
-    _Music.prototype.updateChannels = function(){
-        for(var i=0; i<3; i++){
-            $('.channels>li').eq(i).text(this.currentChannels[i].name);
-        }
-    }
     _Music.prototype.getMusic = function(){
         var _this = this;
         var arr = [];
         this.playing = true;
         this.isRequesting = true;
         
-        if(this.currentChannels[1].channel_id === 'favorite'){ 
+        if(this.isPlaylist){ 
             this.isLike = true;
             $('.like').eq(0).css('color','red')  ;   
             if(this.likeSongsList.num<this.likeSongsList.songsList.length){
@@ -83,22 +58,19 @@ var Music = (function(){
             }else if(this.likeSongsList.songsList.length>0){
                 this.likeSongsList.num = 0;
                 this.currentSong = this.likeSongsList.songsList[this.likeSongsList.num];
-            }else{
-                this.currentChannelsId++;
-                this.currentChannels = channels.slice(this.currentChannelsId-1, this.currentChannelsId+2);
-                $('.channels>li:first').css('opacity','0');
-                alert('我的收藏‘还是空的哦，先从别的频道收藏几首喜欢的音乐吧！');
-                this.updateChannels()
-                this.getMusic()
-            }
+            } 
             this.isRequesting = false
             this.sid = this.currentSong.sid;                
             this.loadDeatils(this.sid)                        
             $('.play-or-pause').removeClass('icon-pause').addClass('icon-play')
+            if(_this.isChecked){
+                $('.photo').css({'background':'url('+_this.currentSong.picture+')','background-size':'cover','display':'block'})            
+            }
         }else{
-            $.get("https://jirenguapi.applinzi.com/fm/getSong.php",{channel: this.currentChannels[1].channel_id})
+            $.get("https://jirenguapi.applinzi.com/fm/getSong.php",{channel: "public_yuzhong_yueyu"})
             .done(function(response){
-                
+                 //获取新歌后将 '.lyric'元素滚动置零
+                $('#music-lyric').scrollTop(0)
                 //获取新歌曲时将上一首歌曲的歌词置空
                 var num = 1
                 _this.currentSong = JSON.parse(response).song[0]
@@ -106,8 +78,6 @@ var Music = (function(){
                 _this.sid = _this.currentSong.sid
                 _this.isRequesting = false
                 _this.loadDeatils(_this.sid)
-                //获取新歌后将 '.lyric'元素滚动置零
-                $('.lyric').scrollTop(0)
                 _this.playing = true
                 $('.play-or-pause').removeClass('icon-pause').addClass('icon-play')
                 //判断收藏列表中是否存在当前歌曲
@@ -121,7 +91,10 @@ var Music = (function(){
                     console.log(2)
                 }else{
                     _this.isLike = false
-                    $('.like').eq(0).css('color','#333')
+                    $('.like').eq(0).css('color','#4bb0ca')
+                }
+                if(_this.isChecked){
+                    $('.photo').css({'background':'url('+_this.currentSong.picture+')','background-size':'cover','display':'block'})            
                 }
             })
         }            
@@ -130,36 +103,6 @@ var Music = (function(){
         var _this = this;
         var duration;
         var volume;
-        $('.next,.channels>li:last').on('click',function(){
-            if(_this.currentChannelsId >= _this.channels.length-2) return
-            _this.currentChannelsId++
-            _this.currentChannels = _this.channels.slice(_this.currentChannelsId-1, _this.currentChannelsId+2)
-            if(!(_this.currentChannels[1].channel_id ==='favorite')){
-                $('.channels>li:first').css('opacity','1')
-            }
-            _this.updateChannels()
-            _this.getMusic()
-        })
-        //切换上一个频道
-        $('.prev,.channels>li:first').on('click',function(){
-            if(_this.currentChannelsId <= 1) return
-            _this.currentChannelsId--
-            _this.currentChannels = _this.channels.slice(_this.currentChannelsId-1, _this.currentChannelsId+2)
-            if(_this.currentChannels[1].channel_id ==='favorite'){
-                $('.channels>li:first').css('opacity','0')
-            }
-            if(_this.currentChannels[1].channel_id === 'favorite'){
-                if(_this.likeSongsList.songsList.length === 0){
-                    alert('我的收藏‘还是空的哦，先从别的频道收藏几首喜欢的音乐吧！')
-                    _this.currentChannelsId++
-                    _this.currentChannels = _this.channels.slice(_this.currentChannelsId-1, _this.currentChannelsId+2)
-                    $('.channels>li:first').css('opacity','1')
-    
-                }
-            }                    
-            _this.updateChannels()
-            _this.getMusic()
-        })
         //换歌
         $('.next-song').on('click', function(){
             if(_this.isRequesting) return
@@ -174,23 +117,27 @@ var Music = (function(){
         //监听是否播放完毕
         $('audio').on('ended', function(){
             _this.getMusic();
+            
         })
         //监听播放位置 
            
         $('audio').on('timeupdate',function(){
-            var currentTime = this.currentTime
-            var lastCurrent = $('.lyric>li.current-line:last')
-            var currentOffset = lastCurrent.offset()
-            var lyricTop = $('.lyric-wrap').offset().top
-            var lyricsHeight = $('.lyric-wrap').outerHeight()
-            var lineHeight = $('.lyric').children('li').eq(0).outerHeight()+5
+            var currentTime = this.currentTime;
+            var lastCurrent = $('.lyric>li.current-line:last');
+            var currentOffset = lastCurrent.offset();
+            var lyricTop = $('#music-lyric').offset().top;
+            var lyricsHeight = $('#music-lyric').outerHeight();
+            var lineHeight = $('.lyric').children('li').eq(0).outerHeight()+5;
             
             _this.lyrics.forEach(function(lyric,index){
                 if( currentTime > lyric.time){
                     _this.highlight(index)
-                        if(currentOffset&&lastCurrent.offset().top-lyricTop>lyricsHeight/2-100){
-                            $('.lyric').scrollTop(lineHeight*_this.lyricsNum)
-                            _this.lyricsNum++                                
+                        if(currentOffset&&lastCurrent.offset().top-lyricTop>lyricsHeight/2){
+                            $('#music-lyric').scrollTop(lineHeight*index)
+                        }else if(currentOffset&&lastCurrent.offset().top<lyricTop){
+                            console.log(1);
+                            var distance = lyricTop-lastCurrent.offset().top+50
+                            $('#music-lyric').scrollTop(distance)
                         }   
                 }
             }) 
@@ -205,12 +152,12 @@ var Music = (function(){
                 }
                 this.time = $('audio')[0].currentTime;
                 var timeRate = Math.floor(time/duration*100) + '%'
-                $('.played').css('width', timeRate);
+                $('.time-line').css('width', timeRate);
                 _this.leftTime(duration - time);
         }, 1000);
         })
         //调节播放进度
-        $('.time-line>.line').on('click', function(e){
+        $('.time-contorl').on('click', function(e){
             var position = e.pageX - $(this).offset().left
             var time = position/$(this).innerWidth()*duration
             $('audio')[0].currentTime = time;
@@ -252,7 +199,7 @@ var Music = (function(){
                 localStorage.setItem('likeSongs', JSON.stringify(_this.likeSongsList.songsList));
                 _this.loadPlaylist();
             }else{
-                $(this).css('color','#333');
+                $(this).css('color','#4bb0ca');
                 _this.sid = _this.currentSong.sid;
                 _this.likeSongsList.songsList.forEach(function(val,index){
                     if(val.sid == _this.sid){
@@ -277,10 +224,53 @@ var Music = (function(){
         })
         //点击喜欢列表中的歌曲，即播放该歌曲
         $('.playlist').on('click','li',function(){
+            _this.isPlaylist = true;
             var listIndex = $('.playlist>li').index($(this));
             _this.currentSong = _this.likeSongsList.songsList[listIndex];
             _this.likeSongsList.num = listIndex;
-            _this.loadDeatils(currentSong.sid);
+            _this.isLike = true;
+            $('.like').eq(0).css('color','red'); 
+            _this.loadDeatils(_this.currentSong.sid);
+
+        })
+        //点击 切换歌词
+        $('.lyric-show').on('click',function(){
+            _this.isChecked = !_this.isChecked;
+            if(_this.isChecked){
+                $('#music-main img,.like-list').css('display','none');
+                $('#music-lyric').css('display','block');
+                $('.photo').css({'background':'url('+_this.currentSong.picture+')','background-size':'cover','display':'block'})            
+                _this.isCilcked = false;
+            }else{
+                $('#music-main img').css('display','inline-block');
+                $('#music-lyric').css('display','none');
+                $('.photo').css('background','');
+                _this.isCilcked = false;
+            }
+        })
+        $('.likelist').on('click',function(){
+            _this.isCilcked = !_this.isCilcked;
+            _this.isPlaylist =!_this.isPlaylist;
+            console.log(_this.isCilcked);
+            if(_this.isCilcked){
+                $('.like-list').css('display','block');
+                $('#music-main img,#music-lyric').css('display','none');
+                $('.photo').css('background','');
+                _this.isChecked = false;
+            }else{
+                $('.like-list').css('display','none');
+                $('#music-main img').css('display','inline-block');
+                _this.isChecked = false;
+            }
+            if(_this.likeSongsList.songsList.length<=0){
+                alert('收藏列表还是空的哦，先去收藏几首喜欢的音乐吧☺');
+                _this.isPlaylist = false;
+                _this.getMusic()
+                $('.like-list').css('display','none');
+                $('#music-main img').css('display','inline-block');
+                _this.isChecked = false;
+
+            }
         })
     }
     _Music.prototype.leftTime = function(num){
@@ -303,23 +293,8 @@ var Music = (function(){
     _Music.prototype.changeVolume = function(volume){   
         $('audio')[0].volume = 1-volume;
         $('.volume-height').css('height',volume*100+'%');
-        this.isSilence ? $('.volume').css('color','red') : $('.volume').css('color','#333');
+        this.isSilence ? $('.volume').css('color','red') : $('.volume').css('color','#4bb0ca');
         
-    }
-    _Music.prototype.loadPlaylist = function(){
-        var _this = this;
-        if(localStorage.getItem('likeSongs')){
-            _this.likeSongsList.songsList =JSON.parse(localStorage.getItem('likeSongs'));
-            var html = '';
-            this.likeSongsList.songsList.forEach(function(val,index){
-                html += `<li>
-                            <div class="list-item-title">${val.title}</div>
-                            <div class="list-item-artist">${val.artist}</div>
-                            <div class="delete">删除</div>
-                         </li>`
-            })
-            $('.playlist').empty().append(html);    
-        }
     }
     _Music.prototype.loadDeatils = function(){
         this.lyrics = [];
@@ -381,7 +356,8 @@ var Music = (function(){
     _Music.prototype.highlight = function(index){
         if(!$('.lyric>li').eq(index).hasClass('current-line')){
             $('.lyric>li').eq(index).addClass('current-line');
-            $('.lyric>li.current-line').prev().removeClass('current-line');
+            $('.lyric>li').eq(index).siblings().removeClass('current-line');
+            
         }
     }
 
