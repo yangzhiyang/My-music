@@ -142,7 +142,7 @@ var Music = (function(){
         $('audio').on('canplay', function(){ 
             var time = 0;
             _this.duration = $('audio')[0].duration     
-            clock = setInterval(function(){
+            var clock = setInterval(function(){
                 if(time >= Math.floor(_this.duration)){
                     clearInterval(clock)
                     return
@@ -238,13 +238,11 @@ var Music = (function(){
                 $('#music-main img,.like-list').css('display','none');
                 $('#music-lyric').css('display','block');
                 $('.photo').css({'background':'url('+_this.currentSong.picture+')','background-size':'cover','display':'block'});
-                $('.lyric-show').removeClass('icon-geci').addClass('icon-back')
                 _this.isCilcked = false;
             }else{
                 $('#music-main img').css('display','inline-block');
                 $('#music-lyric').css('display','none');
                 $('.photo').css('background','');
-                $('.lyric-show').removeClass('icon-back').addClass('icon-geci')
                 _this.isCilcked = false;
                 _this.isPlaylist = false;
             }
