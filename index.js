@@ -85,10 +85,8 @@ var Music = (function(){
                     arr.push(val.sid)
                 })
                 if(arr.indexOf(_this.sid)>-1){
-                    console.log(1)
                     _this.isLike = true
                     $('.like').eq(0).css('color','red')
-                    console.log(2)
                 }else{
                     _this.isLike = false
                     $('.like').eq(0).css('color','#4bb0ca')
@@ -246,12 +244,14 @@ var Music = (function(){
                 $('#music-lyric').css('display','none');
                 $('.photo').css('background','');
                 _this.isCilcked = false;
+                _this.isPlaylist = false;
             }
         })
         $('.likelist').on('click',function(){
             _this.isCilcked = !_this.isCilcked;
+            console.log(_this.isPlaylist);
             _this.isPlaylist =!_this.isPlaylist;
-            console.log(_this.isCilcked);
+            console.log(_this.isPlaylist);
             if(_this.isCilcked){
                 $('.like-list').css('display','block');
                 $('#music-main img,#music-lyric').css('display','none');
@@ -263,8 +263,8 @@ var Music = (function(){
                 _this.isChecked = false;
             }
             if(_this.likeSongsList.songsList.length<=0){
-                alert('收藏列表还是空的哦，先去收藏几首喜欢的音乐吧☺');
                 _this.isPlaylist = false;
+                alert('收藏列表还是空的哦，先去收藏几首喜欢的音乐吧☺');
                 _this.getMusic()
                 $('.like-list').css('display','none');
                 $('#music-main img').css('display','inline-block');
