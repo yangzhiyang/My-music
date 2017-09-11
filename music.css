@@ -46,8 +46,6 @@ body{
 }
 
 #music-contorl{
-    height: 140px;
-    line-height: 140px;
     padding: 0 50px;
     margin-top: 60px;
 }
@@ -80,10 +78,12 @@ body{
 #music-contorl .play-control{
     display: flex;
     justify-content: space-between;
+    height: 140px;
+    align-items: center;
                    
 }
 #music-lyric{
-    height: 260px;
+    height: 240px;
     padding: 10px 0;
     overflow: hidden;
     display: none;

@@ -72,7 +72,6 @@ var Music = (function(){
                 //获取新歌曲时将上一首歌曲的歌词置空
                 var num = 1
                 _this.currentSong = JSON.parse(response).song[0]
-                console.log(JSON.parse(response));
                 _this.sid = _this.currentSong.sid
                 _this.isRequesting = false
                 _this.loadDeatils(_this.sid)
@@ -131,7 +130,6 @@ var Music = (function(){
                         if(currentOffset&&lastCurrent.offset().top-lyricTop>lyricsHeight/2){
                             $('#music-lyric').scrollTop(lineHeight*index)
                         }else if(currentOffset&&lastCurrent.offset().top<lyricTop){
-                            console.log(1);
                             var distance = lyricTop-lastCurrent.offset().top+50
                             $('#music-lyric').scrollTop(distance)
                         }   
@@ -148,7 +146,6 @@ var Music = (function(){
                     return
                 }
                 time = $('audio')[0].currentTime;
-                console.log(time,_this.duration);
                 var timeRate = Math.floor(time/_this.duration*100) + '%'
                 $('.time-line').css('width', timeRate);
                 _this.leftTime(_this.duration - time);
@@ -189,7 +186,6 @@ var Music = (function(){
         //收藏歌曲
         $('.like').on('click',function(){
             _this.isLike = !_this.isLike;
-            console.log(1);
             if(_this.isLike){
                 $(this).css('color','red'); 
                 _this.likeSongsList.songsList.push(_this.currentSong);
@@ -249,9 +245,7 @@ var Music = (function(){
         })
         $('.likelist').on('click',function(){
             _this.isCilcked = !_this.isCilcked;
-            console.log(_this.isPlaylist);
             _this.isPlaylist =!_this.isPlaylist;
-            console.log(_this.isPlaylist);
             if(_this.isCilcked){
                 $('.like-list').css('display','block');
                 $('#music-main img,#music-lyric').css('display','none');
@@ -323,7 +317,6 @@ var Music = (function(){
             var timeRegArr = lyrItem.match(timeReg);
             var lrcRegArr = lyrItem.match(/\][^\[].*/g);
             var content = lyrItem.replace(timeReg,'');
-            console.log(lrcRegArr);
             if(timeRegArr!==null){
                 timeRegArr.forEach(function(timeItem){
                 var minute = Number(String(timeItem.match(/\[\d*/i)).slice(1)),
