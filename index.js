@@ -102,36 +102,12 @@ var Music = (function(){
                 if(this.isChecked){
                     $('.photo').css({'background':'url('+this.currentSong.picture+')','background-size':'cover','display':'block'})            
                 }
-            }).catch(error=>{
-                alert('出错了'+error)
+                return this.sid
+            }).then((sid)=>{
+                this.ajax("https://jirenguapi.applinzi.com/fm/getLyric.php",{sid:sid}).then((response)=>{
+                    this.loadLrc(response)
+                })
             })
-            // $.get("https://jirenguapi.applinzi.com/fm/getSong.php",{channel: "public_yuzhong_yueyu"})
-            // .done(function(response){
-            //      //获取新歌后将 '.lyric'元素滚动置零
-            //     $('#music-lyric').scrollTop(0)
-            //     //获取新歌曲时将上一首歌曲的歌词置空
-            //     var num = 1
-            //     _this.currentSong = JSON.parse(response).song[0]
-            //     _this.sid = _this.currentSong.sid
-            //     _this.isRequesting = false
-            //     _this.loadDeatils(_this.sid)
-            //     _this.playing = true
-            //     $('.play-or-pause').removeClass('icon-pause').addClass('icon-play')
-            //     //判断收藏列表中是否存在当前歌曲
-            //     _this.likeSongsList.songsList.forEach(function(val,index){
-            //         arr.push(val.sid)
-            //     })
-            //     if(arr.indexOf(_this.sid)>-1){
-            //         _this.isLike = true
-            //         $('.like').eq(0).css('color','red')
-            //     }else{
-            //         _this.isLike = false
-            //         $('.like').eq(0).css('color','#4bb0ca')
-            //     }
-            //     if(_this.isChecked){
-            //         $('.photo').css({'background':'url('+_this.currentSong.picture+')','background-size':'cover','display':'block'})            
-            //     }
-            // })
         }
 
     }
@@ -192,7 +168,6 @@ var Music = (function(){
         })
         //调节播放进度
         $('.time-contorl').on('click', (e)=>{
-            console.log($(this));
             var position = e.pageX - $('.time-contorl').eq(0).offset().left
             var leftTime = position/$('.time-contorl').eq(0).innerWidth()*this.duration
             $('audio')[0].currentTime = leftTime;
@@ -227,7 +202,6 @@ var Music = (function(){
         $('.like').on('click',(e)=>{
             this.isLike = !this.isLike;
             if(this.isLike){
-                console.log($(this));
                 $(e.target).css('color','red'); 
                 this.likeSongsList.songsList.push(this.currentSong);
                 this.likeSongsList.num += 1 ;
@@ -249,9 +223,6 @@ var Music = (function(){
         $('.playlist').on('click','li>.delete',(e)=>{
             e.stopPropagation();
             var index = $('.playlist>li>.delete').index($(e.target));
-            console.log(index);
-            console.log(this.likeSongsList.songsList[index].sid);
-            console.log(this.sid);
             if(this.likeSongsList.songsList[index].sid == this.sid){
                 $('.like').css('color','#4bb0ca');
                 this.isLike = false;
@@ -264,8 +235,6 @@ var Music = (function(){
         $('.playlist').on('click','li>.list-item-title',(e)=>{
             this.isPlaylist = true;
             var listIndex = $('.playlist>li>.list-item-title').index($(e.target));
-            console.log($(this));
-            console.log($(e.target));
             this.currentSong = this.likeSongsList.songsList[listIndex];
             this.sid =  this.currentSong.sid
             this.likeSongsList.num = listIndex;
@@ -344,16 +313,12 @@ var Music = (function(){
         $('.artist').text(this.currentSong.artist);
         $('audio').attr('src', this.currentSong.url);
         $('.played').css('width','0%');
-        this.loadLrc(this.sid);
     }
-    _Music.prototype.loadLrc = function(){
-        this.ajax("https://jirenguapi.applinzi.com/fm/getLyric.php",{sid:this.sid}).then((response)=>{
+    _Music.prototype.loadLrc = function(response){
            this. parseLyric(JSON.parse(response).lyric);
             $('.lyric').html(this.lyrics);
             this.renderLrc();             
-        }).catch((error)=>{
-            alert('出错了'+error)
-        })
+        
         // $.get("https://jirenguapi.applinzi.com/fm/getLyric.php",{sid:this.sid})
         // .done(function(response){
         //    _this. parseLyric(JSON.parse(response).lyric);
