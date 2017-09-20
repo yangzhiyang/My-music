@@ -18,13 +18,26 @@ var Music = (function(){
         this.distance;
         this.getStart();
     }
+    _Music.prototype.ajax = function(url,data){
+        var promise = new Promise(function(resolve,reject){
+            $.ajax({
+                url: url,
+                method: 'GET',
+                data: data
+            }).done(function(response){
+                resolve(response);
+            }).fail(function(jqXHR,statusText){
+                reject(new Error(statusText));
+            })
+        })
+        return promise;
+    }
     _Music.prototype.getStart = function(){
-        var _this = this
-        $(document).ready(function(){            
-            _this.loadPlaylist();
-            _this.getMusic();    
+        $(document).ready(()=>{            
+            this.loadPlaylist();
+            this.getMusic();    
             $('audio').attr('autoplay','true');
-            _this.initPlayerProgress();
+            this.initPlayerProgress();
         })
     }
     _Music.prototype.loadPlaylist = function(){
@@ -42,7 +55,6 @@ var Music = (function(){
         }
     }
     _Music.prototype.getMusic = function(){
-        var _this = this;
         var arr = [];
         this.playing = true;
         this.isRequesting = true;
@@ -61,72 +73,99 @@ var Music = (function(){
             this.sid = this.currentSong.sid;                
             this.loadDeatils(this.sid)                        
             $('.play-or-pause').removeClass('icon-pause').addClass('icon-play')
-            if(_this.isChecked){
-                $('.photo').css({'background':'url('+_this.currentSong.picture+')','background-size':'cover','display':'block'})            
+            if(this.isChecked){
+                $('.photo').css({'background':'url('+this.currentSong.picture+')','background-size':'cover','display':'block'})            
             }
         }else{
-            $.get("https://jirenguapi.applinzi.com/fm/getSong.php",{channel: "public_yuzhong_yueyu"})
-            .done(function(response){
+            this.ajax("https://jirenguapi.applinzi.com/fm/getSong.php",{channel: "public_yuzhong_yueyu"}).then((response)=>{
                  //获取新歌后将 '.lyric'元素滚动置零
                 $('#music-lyric').scrollTop(0)
                 //获取新歌曲时将上一首歌曲的歌词置空
                 var num = 1
-                _this.currentSong = JSON.parse(response).song[0]
-                _this.sid = _this.currentSong.sid
-                _this.isRequesting = false
-                _this.loadDeatils(_this.sid)
-                _this.playing = true
+                this.currentSong = JSON.parse(response).song[0]
+                this.sid = this.currentSong.sid
+                this.isRequesting = false
+                this.loadDeatils(this.sid)
+                this.playing = true
                 $('.play-or-pause').removeClass('icon-pause').addClass('icon-play')
                 //判断收藏列表中是否存在当前歌曲
-                _this.likeSongsList.songsList.forEach(function(val,index){
+                this.likeSongsList.songsList.forEach(function(val,index){
                     arr.push(val.sid)
                 })
-                if(arr.indexOf(_this.sid)>-1){
-                    _this.isLike = true
+                if(arr.indexOf(this.sid)>-1){
+                    this.isLike = true
                     $('.like').eq(0).css('color','red')
                 }else{
-                    _this.isLike = false
+                    this.isLike = false
                     $('.like').eq(0).css('color','#4bb0ca')
                 }
-                if(_this.isChecked){
-                    $('.photo').css({'background':'url('+_this.currentSong.picture+')','background-size':'cover','display':'block'})            
+                if(this.isChecked){
+                    $('.photo').css({'background':'url('+this.currentSong.picture+')','background-size':'cover','display':'block'})            
                 }
+            }).catch(error=>{
+                alert('出错了'+error)
             })
+            // $.get("https://jirenguapi.applinzi.com/fm/getSong.php",{channel: "public_yuzhong_yueyu"})
+            // .done(function(response){
+            //      //获取新歌后将 '.lyric'元素滚动置零
+            //     $('#music-lyric').scrollTop(0)
+            //     //获取新歌曲时将上一首歌曲的歌词置空
+            //     var num = 1
+            //     _this.currentSong = JSON.parse(response).song[0]
+            //     _this.sid = _this.currentSong.sid
+            //     _this.isRequesting = false
+            //     _this.loadDeatils(_this.sid)
+            //     _this.playing = true
+            //     $('.play-or-pause').removeClass('icon-pause').addClass('icon-play')
+            //     //判断收藏列表中是否存在当前歌曲
+            //     _this.likeSongsList.songsList.forEach(function(val,index){
+            //         arr.push(val.sid)
+            //     })
+            //     if(arr.indexOf(_this.sid)>-1){
+            //         _this.isLike = true
+            //         $('.like').eq(0).css('color','red')
+            //     }else{
+            //         _this.isLike = false
+            //         $('.like').eq(0).css('color','#4bb0ca')
+            //     }
+            //     if(_this.isChecked){
+            //         $('.photo').css({'background':'url('+_this.currentSong.picture+')','background-size':'cover','display':'block'})            
+            //     }
+            // })
         }
 
     }
     _Music.prototype.initPlayerProgress = function(){
-        var _this = this;
         var volume;
         //换歌
-        $('.next-song').on('click', function(){
-            if(_this.isRequesting) return
-            _this.getMusic();
+        $('.next-song').on('click', ()=>{
+            if(this.isRequesting) return
+            this.getMusic();
         }) 
         //播放、暂停
-        $('.play-or-pause').on('click',function(){
-            _this.playing ? $('audio')[0].pause():$('audio')[0].play()
-            _this.playing ? $(this).removeClass('icon-play').addClass('icon-pause') : $(this).removeClass('icon-pause').addClass('icon-play')
-            _this.playing = !_this.playing
+        $('.play-or-pause').on('click',()=>{
+            this.playing ? $('audio')[0].pause():$('audio')[0].play()
+            this.playing ? $('.play-or-pause').removeClass('icon-play').addClass('icon-pause') : $('.play-or-pause').removeClass('icon-pause').addClass('icon-play')
+            this.playing = !this.playing
         })
         //监听是否播放完毕
-        $('audio').on('ended', function(){
-            _this.getMusic();
+        $('audio').on('ended', ()=>{
+            this.getMusic();
             
         })
         //监听播放位置 
            
-        $('audio').on('timeupdate',function(){
-            var currentTime = this.currentTime;
+        $('audio').on('timeupdate',()=>{
+            var currentTime = $('audio')[0].currentTime;
             var lastCurrent = $('.lyric>li.current-line:last');
             var currentOffset = lastCurrent.offset();
             var lyricTop = $('#music-lyric').offset().top;
             var lyricsHeight = $('#music-lyric').outerHeight();
             var lineHeight = $('.lyric').children('li').eq(0).outerHeight()+5;
             
-            _this.lyrics.forEach(function(lyric,index){
+            this.lyrics.forEach((lyric,index)=>{
                 if( currentTime > lyric.time){
-                    _this.highlight(index)
+                    this.highlight(index)
                         if(currentOffset&&lastCurrent.offset().top-lyricTop>lyricsHeight/2){
                             $('#music-lyric').scrollTop(lineHeight*index)
                         }else if(currentOffset&&lastCurrent.offset().top<lyricTop){
@@ -137,132 +176,140 @@ var Music = (function(){
             }) 
         })        
         //加载进度条
-        $('audio').on('canplay', function(){ 
+        $('audio').on('canplay', ()=>{ 
             var time = 0;
-            _this.duration = $('audio')[0].duration     
-            var clock = setInterval(function(){
-                if(time >= Math.floor(_this.duration)){
+            this.duration = $('audio')[0].duration     
+            var clock = setInterval(()=>{
+                if(time >= Math.floor(this.duration)){
                     clearInterval(clock)
                     return
                 }
                 time = $('audio')[0].currentTime;
-                var timeRate = Math.floor(time/_this.duration*100) + '%'
+                var timeRate = Math.floor(time/this.duration*100) + '%'
                 $('.time-line').css('width', timeRate);
-                _this.leftTime(_this.duration - time);
+                this.leftTime(this.duration - time);
         }, 1000);
         })
         //调节播放进度
-        $('.time-contorl').on('click', function(e){
-            var position = e.pageX - $(this).offset().left
-            var leftTime = position/$(this).innerWidth()*_this.duration
+        $('.time-contorl').on('click', (e)=>{
+            console.log($(this));
+            var position = e.pageX - $('.time-contorl').eq(0).offset().left
+            var leftTime = position/$('.time-contorl').eq(0).innerWidth()*this.duration
             $('audio')[0].currentTime = leftTime;
         })
         //调解音量
-        $('.volume-controler').on('click',function(e){
-            event.stopPropagation()
-            var position = e.pageY - $(this).offset().top
+        $('.volume-controler').on('click',(e)=>{
+            e.stopPropagation()
+            var position = e.pageY - $('.volume-controler').eq(0).offset().top
             volume = (position-5)/50
             if(volume >=1){
-                _this.isSilence = true;                
-                _this.changeVolume(1);
+                this.isSilence = true;                
+                this.changeVolume(1);
             }else if(volume <=0){
-                _this.isSilence = false;                
-                _this.changeVolume(0);
+                this.isSilence = false;                
+                this.changeVolume(0);
             }else{
-                _this.isSilence = false;                
-                _this.changeVolume(volume);
+                this.isSilence = false;                
+                this.changeVolume(volume);
             }
         })
         //直接静音和恢复
-        $('.volume').on('click',function(){
-            _this.isSilence = !_this.isSilence;
-            if(_this.isSilence){
-                _this.changeVolume(1);
+        $('.volume').on('click',()=>{
+            this.isSilence = !this.isSilence;
+            if(this.isSilence){
+                this.changeVolume(1);
             }else{
-                _this.changeVolume(0)  ;                      
+                this.changeVolume(0)  ;                      
             }
         })
     
         //收藏歌曲
-        $('.like').on('click',function(){
-            _this.isLike = !_this.isLike;
-            if(_this.isLike){
-                $(this).css('color','red'); 
-                _this.likeSongsList.songsList.push(_this.currentSong);
-                _this.likeSongsList.num += 1 ;
-                localStorage.setItem('likeSongs', JSON.stringify(_this.likeSongsList.songsList));
-                _this.loadPlaylist();
+        $('.like').on('click',(e)=>{
+            this.isLike = !this.isLike;
+            if(this.isLike){
+                console.log($(this));
+                $(e.target).css('color','red'); 
+                this.likeSongsList.songsList.push(this.currentSong);
+                this.likeSongsList.num += 1 ;
+                localStorage.setItem('likeSongs', JSON.stringify(this.likeSongsList.songsList));
+                this.loadPlaylist();
             }else{
-                $(this).css('color','#4bb0ca');
-                _this.sid = _this.currentSong.sid;
-                _this.likeSongsList.songsList.forEach(function(val,index){
-                    if(val.sid == _this.sid){
-                        _this.likeSongsList.songsList.splice(index,1);
-                        localStorage.setItem('likeSongs', JSON.stringify(_this.likeSongsList.songsList));                               
+                $(e.target).css('color','#4bb0ca');
+                this.sid = this.currentSong.sid;
+                this.likeSongsList.songsList.forEach((val,index)=>{
+                    if(val.sid == this.sid){
+                        this.likeSongsList.songsList.splice(index,1);
+                        localStorage.setItem('likeSongs', JSON.stringify(this.likeSongsList.songsList));                               
                     } 
                 })                           
-                _this.loadPlaylist();
+                this.loadPlaylist();
             }
         })
         //列表中删除收藏歌曲
-        $('.playlist').on('click','li>.delete',function(e){
+        $('.playlist').on('click','li>.delete',(e)=>{
             e.stopPropagation();
-            var index = $('.playlist>li>.delete').index($(this));
-            if(_this.likeSongsList.songsList[index].sid == _this.sid){
-                $('.like').css('color','#333');
-                _this.isLike = false;
+            var index = $('.playlist>li>.delete').index($(e.target));
+            console.log(index);
+            console.log(this.likeSongsList.songsList[index].sid);
+            console.log(this.sid);
+            if(this.likeSongsList.songsList[index].sid == this.sid){
+                $('.like').css('color','#4bb0ca');
+                this.isLike = false;
             }
-            _this.likeSongsList.songsList.splice(index,1);
-            localStorage.setItem('likeSongs', JSON.stringify(_this.likeSongsList.songsList));                    
-            _this.loadPlaylist();
+            this.likeSongsList.songsList.splice(index,1);
+            localStorage.setItem('likeSongs', JSON.stringify(this.likeSongsList.songsList));                    
+            this.loadPlaylist();
         })
         //点击喜欢列表中的歌曲，即播放该歌曲
-        $('.playlist').on('click','li',function(){
-            _this.isPlaylist = true;
-            var listIndex = $('.playlist>li').index($(this));
-            _this.currentSong = _this.likeSongsList.songsList[listIndex];
-            _this.likeSongsList.num = listIndex;
-            _this.isLike = true;
+        $('.playlist').on('click','li>.list-item-title',(e)=>{
+            this.isPlaylist = true;
+            var listIndex = $('.playlist>li>.list-item-title').index($(e.target));
+            console.log($(this));
+            console.log($(e.target));
+            this.currentSong = this.likeSongsList.songsList[listIndex];
+            this.sid =  this.currentSong.sid
+            this.likeSongsList.num = listIndex;
+            this.isLike = true;
             $('.like').eq(0).css('color','red'); 
-            _this.loadDeatils(_this.currentSong.sid);
+            this.loadDeatils(this.currentSong.sid);
 
         })
         //点击 切换歌词
-        $('.lyric-show').on('click',function(){
-            _this.isChecked = !_this.isChecked;
-            if(_this.isChecked){
+        $('.lyric-show').on('click',()=>{
+            this.isChecked = !this.isChecked;
+            if(this.isChecked){
                 $('#music-main img,.like-list').css('display','none');
                 $('#music-lyric').css('display','block');
-                $('.photo').css({'background':'url('+_this.currentSong.picture+')','background-size':'cover','display':'block'});
-                _this.isCilcked = false;
+                $('.photo').css({'background':'url('+this.currentSong.picture+')','background-size':'cover','display':'block'});
+                this.isCilcked = false;
             }else{
                 $('#music-main img').css('display','inline-block');
                 $('#music-lyric').css('display','none');
                 $('.photo').css('background','');
-                _this.isCilcked = false;
-                _this.isPlaylist = false;
+                this.isCilcked = false;
+                this.isPlaylist = false;
             }
         })
-        $('.likelist').on('click',function(){
-            _this.isCilcked = !_this.isCilcked;
-            _this.isPlaylist =!_this.isPlaylist;
-            if(_this.isCilcked){
+        $('.likelist').on('click',()=>{
+            this.isCilcked = !this.isCilcked;
+            this.isPlaylist =!this.isPlaylist;
+            if(this.isCilcked){
                 $('.like-list').css('display','block');
                 $('#music-main img,#music-lyric').css('display','none');
                 $('.photo').css('background','');
-                _this.isChecked = false;
+                this.isChecked = false;
             }else{
                 $('.like-list').css('display','none');
                 $('#music-main img').css('display','inline-block');
-                _this.isChecked = false;
+                this.isChecked = false;
             }
-            if(_this.likeSongsList.songsList.length<=0){
-                _this.isPlaylist = false;
+            if(this.likeSongsList.songsList.length<=0){
+                this.isPlaylist = false;
                 alert('收藏列表还是空的哦，先去收藏几首喜欢的音乐吧☺');
-                _this.getMusic()
+                this.getMusic()
                 $('.like-list').css('display','none');
                 $('#music-main img').css('display','inline-block');
-                _this.isChecked = false;
+                this.isChecked = false;
 
             }
         })
@@ -300,25 +347,30 @@ var Music = (function(){
         this.loadLrc(this.sid);
     }
     _Music.prototype.loadLrc = function(){
-        var _this = this;
-        $.get("https://jirenguapi.applinzi.com/fm/getLyric.php",{sid:this.sid})
-        .done(function(response){
-           _this. parseLyric(JSON.parse(response).lyric);
-            $('.lyric').html(_this.lyrics);
-            _this.renderLrc();             
+        this.ajax("https://jirenguapi.applinzi.com/fm/getLyric.php",{sid:this.sid}).then((response)=>{
+           this. parseLyric(JSON.parse(response).lyric);
+            $('.lyric').html(this.lyrics);
+            this.renderLrc();             
+        }).catch((error)=>{
+            alert('出错了'+error)
         })
+        // $.get("https://jirenguapi.applinzi.com/fm/getLyric.php",{sid:this.sid})
+        // .done(function(response){
+        //    _this. parseLyric(JSON.parse(response).lyric);
+        //     $('.lyric').html(_this.lyrics);
+        //     _this.renderLrc();             
+        // })
     }
     _Music.prototype.parseLyric = function(lrc){
         var lyricsArr = lrc.split("\n");
-        var _this = this;
-        lyricsArr.forEach(function(lyrItem,index){
+        lyricsArr.forEach((lyrItem,index)=>{
             var lyrObj = {};
             var timeReg = /\[(?:\d+:)\d+.\d+]/g;
             var timeRegArr = lyrItem.match(timeReg);
             var lrcRegArr = lyrItem.match(/\][^\[].*/g);
             var content = lyrItem.replace(timeReg,'');
             if(timeRegArr!==null){
-                timeRegArr.forEach(function(timeItem){
+                timeRegArr.forEach((timeItem)=>{
                 var minute = Number(String(timeItem.match(/\[\d*/i)).slice(1)),
                     second = Number(String(timeItem.match(/\:\d*/i)).slice(1)),
                     time = minute * 60 + second;
@@ -331,7 +383,7 @@ var Music = (function(){
             //api返回的歌词存在“[00:02:00][01:02:00] 同一句歌词”，改用{'时间','歌词'}保存歌词数据
             //获得{'时间','歌词'}
             if(!$.isEmptyObject(lyrObj) && lyrObj.time !== 0){
-                _this.lyrics.push(lyrObj);
+                this.lyrics.push(lyrObj);
             }
         })
         this.lyrics.sort(function(a,b){
